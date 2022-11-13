@@ -1,6 +1,7 @@
 /* eslint-disable no-import-assign */
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { act } from 'react-dom/test-utils';
 import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
 import Home from '../pages/Home';
@@ -19,30 +20,25 @@ const HomeComp = () => (
 );
 
 describe('Home', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     productAPI.getProductsService = jest.fn().mockResolvedValue(mockResponse);
-    render(<HomeComp />);
+    await act(async () => render(<HomeComp />));
   });
 
   afterEach(() => {
     jest.resetAllMocks();
   });
 
-  it('home page content rendered properly', async () => {
+  it('home page content rendered properly', () => {
     expect(screen.getByText(/Telusuri Kategori/i)).toBeInTheDocument();
-
     expect(screen.getByText(/jual/i)).toBeInTheDocument();
-
     categories.forEach((category) => {
       expect(screen.getByTestId('tab-' + category.name)).toBeInTheDocument();
     });
-
-    await waitFor(() => {
-      expect(screen.getAllByTestId('product-card')).toHaveLength(mockResponse.data.length);
-    });
+    expect(screen.getAllByTestId('product-card')).toHaveLength(mockResponse.data.length);
   });
 
-  it('able to set active tab', () => {
+  it('able to set active tab', async () => {
     const tabSemua = screen.getByTestId('tab-Semua');
 
     const tabHobi = screen.getByTestId('tab-Hobi');
@@ -53,9 +49,10 @@ describe('Home', () => {
 
     userEvent.click(tabHobi);
 
-    expect(tabSemua).toHaveClass('bg-primary-01');
-
-    expect(tabHobi).toHaveClass('bg-primary-04');
+    await act(async () => {
+      expect(tabSemua).toHaveClass('bg-primary-01');
+      expect(tabHobi).toHaveClass('bg-primary-04');
+    });
   });
 });
 
